@@ -6,38 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-
-  # Step 1: Load all secrets from central workflow
-  secrets:
-    name: Load secrets
+  deploy:
+    name: Load secrets & Deploy
     uses: MyDemoOrgTA/.github/.github/workflows/secrets-poc-vault.yml@main
     secrets: inherit
-
-  # Step 2: Validate + Deploy
-  deploy:
-    name: Deploy Application
-    needs: secrets
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Load secrets from 1Password
-        uses: 1password/load-secrets-action@7ce42673ba9ed69053d678faeba29ea36bd25755  # v4.0.0
-        env:
-          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          DB_USERNAME: op://Test/DB_PASS/username
-          DB_PASSWORD: op://Test/DB_PASS/password
-        with:
-          export-env: true
-
-      - name: Validate secrets
-        run: |
-          [ -n "$DB_USERNAME" ] && echo "✅ DB_USERNAME set" || { echo "❌ DB_USERNAME missing"; exit 1; }
-          [ -n "$DB_PASSWORD" ] && echo "✅ DB_PASSWORD set" || { echo "❌ DB_PASSWORD missing"; exit 1; }
-
-      - name: Deploy
-        run: |
-          echo "🚀 Starting deployment..."
-          echo "🔌 Connecting to database as: $DB_USERNAME"
-          echo "✅ Deployment complete"
