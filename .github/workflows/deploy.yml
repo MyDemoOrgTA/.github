@@ -1,0 +1,53 @@
+name: Deploy App
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+
+  # Step 1: Load all secrets from central workflow
+  secrets:
+    name: Load secrets
+    uses: Litmus-Automation/.github/.github/workflows/secrets-poc-vault.yml@main
+    secrets: inherit
+
+  # Step 2: Validate secrets loaded correctly
+  validate:
+    name: Validate secrets
+    needs: secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check secrets are present
+        run: |
+          if [ -z "$DB_USERNAME" ]; then
+            echo "❌ DB_USERNAME is missing"
+            exit 1
+          fi
+          if [ -z "$DB_PASSWORD" ]; then
+            echo "❌ DB_PASSWORD is missing"
+            exit 1
+          fi
+          echo "✅ All secrets loaded successfully"
+        env:
+          DB_USERNAME: ${{ needs.secrets.outputs.db_username }}
+          DB_PASSWORD: ${{ needs.secrets.outputs.db_password }}
+
+  # Step 3: Deploy — secrets injected as env vars
+  deploy:
+    name: Deploy Application
+    needs: secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy
+        run: |
+          echo "🚀 Starting deployment..."
+          echo "🔌 Connecting to database as: $DB_USERNAME"
+          echo "✅ Deployment complete"
+        env:
+          DB_USERNAME: ${{ needs.secrets.outputs.db_username }}
+          DB_PASSWORD: ${{ needs.secrets.outputs.db_password }}
