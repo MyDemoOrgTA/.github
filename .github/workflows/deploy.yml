@@ -10,7 +10,7 @@ jobs:
   # Step 1: Load all secrets from central workflow
   secrets:
     name: Load secrets
-    uses: Litmus-Automation/.github/.github/workflows/secrets-poc-vault.yml@main
+    uses: MyDemoOrgTA/.github/.github/workflows/secrets-poc-vault.yml@main
     secrets: inherit
 
   # Step 2: Validate secrets loaded correctly
